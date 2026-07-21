@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cari Kode OTP</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #f3f4f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .card {
+            background-color: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        h2 {
+            margin-top: 0;
+            color: #1f2937;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            margin: 15px 0;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result-container {
+            margin-top: 25px;
+        }
+        .otp-code {
+            font-size: 36px;
+            font-weight: bold;
+            color: #1f2937;
+            letter-spacing: 4px;
+            margin: 10px 0;
+        }
+        .message {
+            font-size: 14px;
+            color: #6b7280;
+        }
+        /* State saat loading */
+        button:disabled {
+            background-color: #9ca3af;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2>Cari Kode OTP</h2>
+        <input type="text" id="emailInput" placeholder="Masukkan alamat email..." autocomplete="off">
+        <button id="btnCari" onclick="cariKode()">Cari Kode</button>
+
+        <div class="result-container" id="resultContainer" style="display: none;">
+            <div class="otp-code" id="otpCode">-</div>
+            <div class="message" id="pesanStatus"></div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // GANTI URL DI BAWAH INI DENGAN URL GOOGLE APPS SCRIPT ANDA
+        // ==========================================
+        const API_URL = "https://script.google.com/macros/s/AKfycbwUORAJR-kP7A5c5wUxVowXM_0_i_Pa9vI1lvok4733Zfr8v87lDVPZcFkGYx1WZttj/exec"; 
+
+        async function cariKode() {
+            const email = document.getElementById("emailInput").value.trim();
+            const btnCari = document.getElementById("btnCari");
+            const resultContainer = document.getElementById("resultContainer");
+            const otpCode = document.getElementById("otpCode");
+            const pesanStatus = document.getElementById("pesanStatus");
+
+            if (!email) {
+                alert("Silakan masukkan alamat email terlebih dahulu!");
+                return;
+            }
+
+            // Tampilan saat loading
+            btnCari.disabled = true;
+            btnCari.innerText = "Mencari...";
+            resultContainer.style.display = "block";
+            otpCode.innerText = "...";
+            pesanStatus.innerText = "Sedang memeriksa database...";
+            pesanStatus.style.color = "#6b7280";
+
+            try {
+                // Memanggil API Google Apps Script
+                const response = await fetch(`${API_URL}?email=${encodeURIComponent(email)}`);
+                const data = await response.json();
+
+                if (data.status === "found") {
+                    otpCode.innerText = data.kode;
+                    pesanStatus.innerText = "Kode terbaru untuk email ini berhasil ditemukan!";
+                    pesanStatus.style.color = "#10b981"; // Warna hijau
+                } else {
+                    otpCode.innerText = "-";
+                    pesanStatus.innerText = data.pesan || "Kode tidak ditemukan.";
+                    pesanStatus.style.color = "#ef4444"; // Warna merah
+                }
+            } catch (error) {
+                otpCode.innerText = "Error";
+                pesanStatus.innerText = "Gagal terhubung ke server. Pastikan URL API sudah benar.";
+                pesanStatus.style.color = "#ef4444";
+                console.error("Error:", error);
+            } finally {
+                // Mengembalikan tombol ke keadaan semula
+                btnCari.disabled = false;
+                btnCari.innerText = "Cari Kode";
+            }
+        }
+
+        // Fitur tambahan: Tekan 'Enter' untuk langsung mencari
+        document.getElementById("emailInput").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                cariKode();
+            }
+        });
+    </script>
+</body>
+</html>
