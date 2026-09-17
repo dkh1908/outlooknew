@@ -3,88 +3,273 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cari Kode OTP</title>
+    <title>Advanced OTP Tracker</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --bg-color: #0b0f19;
+            --surface-color: rgba(255, 255, 255, 0.03);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --accent-primary: #8b5cf6; /* Ungu */
+            --accent-secondary: #06b6d4; /* Cyan */
+        }
+
         * {
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Inter', sans-serif;
         }
+
         body {
-            background-color: #f3f4f6;
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(139, 92, 246, 0.15), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(6, 182, 212, 0.15), transparent 25%);
+            color: var(--text-main);
+            margin: 0;
+            padding: 40px 20px;
+            min-height: 100vh;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
-            height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        /* --- Header & Search Bar --- */
+        .header-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header-section h1 {
+            font-size: 32px;
+            margin: 0 0 10px 0;
+            background: linear-gradient(to right, var(--accent-secondary), var(--accent-primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -1px;
+        }
+
+        .header-section p {
+            color: var(--text-muted);
             margin: 0;
         }
-        .card {
-            background-color: white;
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
+
+        .search-box {
+            display: flex;
+            gap: 15px;
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            max-width: 600px;
+            margin: 0 auto 40px auto;
         }
-        h2 {
-            margin-top: 0;
-            color: #1f2937;
-        }
-        input[type="text"] {
-            width: 100%;
-            padding: 12px;
-            margin: 15px 0;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            font-size: 16px;
-        }
-        button {
-            width: 100%;
-            padding: 12px;
-            background-color: #007bff;
-            color: white;
+
+        .search-box input {
+            flex-grow: 1;
+            background: transparent;
             border: none;
-            border-radius: 6px;
+            color: white;
+            padding: 10px 20px;
             font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.3s;
+            outline: none;
         }
-        button:hover {
-            background-color: #0056b3;
-        }
-        .result-container {
-            margin-top: 25px;
-        }
-        .otp-code {
-            font-size: 36px;
-            font-weight: bold;
-            color: #1f2937;
-            letter-spacing: 4px;
-            margin: 10px 0;
-        }
-        .message {
-            font-size: 14px;
+
+        .search-box input::placeholder {
             color: #6b7280;
         }
-        /* State saat loading */
-        button:disabled {
-            background-color: #9ca3af;
+
+        .search-box button {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .search-box button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(139, 92, 246, 0.4);
+        }
+
+        .search-box button:disabled {
+            background: #374151;
+            box-shadow: none;
+            transform: none;
             cursor: not-allowed;
+            color: var(--text-muted);
+        }
+
+        /* --- Table Glassmorphism --- */
+        .table-wrapper {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            backdrop-filter: blur(12px);
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            display: none; /* Sembunyikan awal */
+        }
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            background: rgba(255, 255, 255, 0.02);
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            vertical-align: middle;
+            font-size: 14px;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        /* --- Table Content Styling --- */
+        .sender-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .sender-name {
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .sender-email {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .time-badge {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: var(--text-muted);
+            display: inline-block;
+        }
+
+        .subject-text {
+            color: #d1d5db;
+            max-width: 250px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* --- OTP Code & Copy --- */
+        .action-cell {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .otp-display {
+            font-family: monospace;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--accent-secondary);
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(6, 182, 212, 0.3);
+        }
+
+        .btn-copy {
+            background: rgba(6, 182, 212, 0.1);
+            border: 1px solid rgba(6, 182, 212, 0.3);
+            color: var(--accent-secondary);
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-copy:hover {
+            background: var(--accent-secondary);
+            color: var(--bg-color);
+        }
+
+        /* --- States --- */
+        .status-message {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-muted);
         }
     </style>
 </head>
 <body>
 
-    <div class="card">
-        <h2>Cari Kode OTP</h2>
-        <input type="text" id="emailInput" placeholder="Masukkan alamat email..." autocomplete="off">
-        <button id="btnCari" onclick="cariKode()">Cari Kode</button>
-
-        <div class="result-container" id="resultContainer" style="display: none;">
-            <div class="otp-code" id="otpCode">-</div>
-            <div class="message" id="pesanStatus"></div>
+    <div class="container">
+        <!-- Header -->
+        <div class="header-section">
+            <h1>Sistem Lacak OTP</h1>
+            <p>Akses sinkronisasi email dan temukan kode keamanan dengan cepat.</p>
         </div>
+
+        <!-- Search Bar -->
+        <div class="search-box">
+            <input type="text" id="emailInput" placeholder="Ketik alamat email tujuan..." autocomplete="off">
+            <button id="btnCari" onclick="cariKode()">Lacak Inbox</button>
+        </div>
+
+        <!-- Table Area -->
+        <div class="table-wrapper" id="tableWrapper">
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Pengirim</th>
+                            <th>Waktu Masuk</th>
+                            <th>Subjek / Pesan</th>
+                            <th>Kode OTP</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- Data akan dirender di sini via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
 
     <script>
@@ -96,50 +281,110 @@
         async function cariKode() {
             const email = document.getElementById("emailInput").value.trim();
             const btnCari = document.getElementById("btnCari");
-            const resultContainer = document.getElementById("resultContainer");
-            const otpCode = document.getElementById("otpCode");
-            const pesanStatus = document.getElementById("pesanStatus");
+            const tableWrapper = document.getElementById("tableWrapper");
+            const tableBody = document.getElementById("tableBody");
 
             if (!email) {
                 alert("Silakan masukkan alamat email terlebih dahulu!");
                 return;
             }
 
-            // Tampilan saat loading
+            // State Loading
             btnCari.disabled = true;
-            btnCari.innerText = "Mencari...";
-            resultContainer.style.display = "block";
-            otpCode.innerText = "...";
-            pesanStatus.innerText = "Sedang memeriksa database...";
-            pesanStatus.style.color = "#6b7280";
+            btnCari.innerText = "Memproses...";
+            tableWrapper.style.display = "block";
+            tableBody.innerHTML = `<tr><td colspan="5" class="status-message">Sedang menghubungkan ke server email...</td></tr>`;
 
             try {
-                // Memanggil API Google Apps Script
                 const response = await fetch(`${API_URL}?email=${encodeURIComponent(email)}`);
                 const data = await response.json();
 
                 if (data.status === "found") {
-                    otpCode.innerText = data.kode;
-                    pesanStatus.innerText = "Kode terbaru untuk email ini berhasil ditemukan!";
-                    pesanStatus.style.color = "#10b981"; // Warna hijau
+                    tableBody.innerHTML = ""; // Bersihkan tabel
+                    
+                    // Deteksi jika respon API berupa array (banyak pesan)
+                    let listPesan = data.data || data.messages || [];
+                    
+                    // Fallback jika API script lama hanya merespon 1 kode tunggal
+                    if (listPesan.length === 0 && data.kode) {
+                        listPesan.push({
+                            sender_name: "Sistem Eksternal",
+                            sender_email: "noreply@system.com",
+                            time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+                            subject: "Permintaan Kode Keamanan",
+                            kode: data.kode
+                        });
+                    }
+
+                    // Render baris tabel
+                    listPesan.forEach((pesan, index) => {
+                        let senderName = pesan.sender_name || "Unknown Sender";
+                        let senderEmail = pesan.sender_email || "no-reply@domain.com";
+                        let time = pesan.time || "-";
+                        let subject = pesan.subject || "Pesan Verifikasi";
+                        let kodeOTP = pesan.kode || data.kode;
+
+                        const tr = document.createElement("tr");
+                        tr.innerHTML = `
+                            <td style="color: var(--text-muted); font-weight: 500;">#${index + 1}</td>
+                            <td>
+                                <div class="sender-info">
+                                    <span class="sender-name">${senderName}</span>
+                                    <span class="sender-email">${senderEmail}</span>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="time-badge">${time}</span>
+                            </td>
+                            <td>
+                                <div class="subject-text">${subject}</div>
+                            </td>
+                            <td>
+                                <div class="action-cell">
+                                    ${kodeOTP && kodeOTP !== "-" ? `
+                                        <span class="otp-display">${kodeOTP}</span>
+                                        <button class="btn-copy" onclick="copyCode('${kodeOTP}', this)">Copy</button>
+                                    ` : `<span class="otp-display" style="color: #4b5563;">-</span>`}
+                                </div>
+                            </td>
+                        `;
+                        tableBody.appendChild(tr);
+                    });
+
                 } else {
-                    otpCode.innerText = "-";
-                    pesanStatus.innerText = data.pesan || "Kode tidak ditemukan.";
-                    pesanStatus.style.color = "#ef4444"; // Warna merah
+                    tableBody.innerHTML = `<tr><td colspan="5" class="status-message" style="color: #ef4444;">${data.pesan || "Tidak ada pesan yang ditemukan untuk email ini."}</td></tr>`;
                 }
             } catch (error) {
-                otpCode.innerText = "Error";
-                pesanStatus.innerText = "Gagal terhubung ke server. Pastikan URL API sudah benar.";
-                pesanStatus.style.color = "#ef4444";
-                console.error("Error:", error);
+                tableBody.innerHTML = `<tr><td colspan="5" class="status-message" style="color: #ef4444;">Koneksi gagal. Pastikan URL API sudah benar.</td></tr>`;
+                console.error(error);
             } finally {
-                // Mengembalikan tombol ke keadaan semula
                 btnCari.disabled = false;
-                btnCari.innerText = "Cari Kode";
+                btnCari.innerText = "Lacak Inbox";
             }
         }
 
-        // Fitur tambahan: Tekan 'Enter' untuk langsung mencari
+        // Fungsi Salin (Copy)
+        function copyCode(text, btnElement) {
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = btnElement.innerText;
+                const originalBg = btnElement.style.background;
+                const originalColor = btnElement.style.color;
+
+                btnElement.innerText = "Tersalin!";
+                btnElement.style.background = "#10b981"; // Hijau
+                btnElement.style.color = "#fff";
+                btnElement.style.borderColor = "#10b981";
+                
+                setTimeout(() => {
+                    btnElement.innerText = originalText;
+                    btnElement.style.background = originalBg;
+                    btnElement.style.color = originalColor;
+                    btnElement.style.borderColor = "rgba(6, 182, 212, 0.3)";
+                }, 2000);
+            }).catch(err => console.error("Gagal menyalin: ", err));
+        }
+
+        // Enter untuk trigger cari
         document.getElementById("emailInput").addEventListener("keypress", function(event) {
             if (event.key === "Enter") {
                 event.preventDefault();
